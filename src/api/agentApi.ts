@@ -21,6 +21,35 @@ export async function getModelConfig(
   return res.data ?? null
 }
 
+export interface SessionRecord {
+  sessionId: string
+  agentId: string
+  title: string
+  turnCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MessageRecord {
+  messageId: string
+  role: string
+  content: string
+  createdAt: string
+}
+
+export async function getSessions(userId: string, agentId?: string): Promise<SessionRecord[]> {
+  const query = agentId
+    ? `userId=${encodeURIComponent(userId)}&agentId=${encodeURIComponent(agentId)}`
+    : `userId=${encodeURIComponent(userId)}`
+  const res = await get<SessionRecord[]>(`/api/v1/sessions?${query}`)
+  return res.data ?? []
+}
+
+export async function getSessionMessages(sessionId: string): Promise<MessageRecord[]> {
+  const res = await get<MessageRecord[]>(`/api/v1/session/messages?sessionId=${encodeURIComponent(sessionId)}`)
+  return res.data ?? []
+}
+
 export async function updateModelConfig(userId: string, agentId: string, baseUrl: string, apiKey: string, model: string) {
   return post('/api/v1/update_model_config', { userId, agentId, baseUrl, apiKey, model })
 }
@@ -33,6 +62,7 @@ export function chatStream(
   onChunk: (text: string) => void,
   onDone: () => void,
   onError: (err: string) => void,
+  webSearch?: boolean,
 ): () => void {
-  return streamPost('/api/v1/chat_stream', { agentId, userId, sessionId, message }, onChunk, onDone, onError)
+  return streamPost('/api/v1/chat_stream', { agentId, userId, sessionId, message, webSearch: webSearch ?? false }, onChunk, onDone, onError)
 }

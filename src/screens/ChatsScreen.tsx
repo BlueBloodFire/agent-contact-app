@@ -1,16 +1,25 @@
+import { useEffect } from 'react'
 import { Bot, ChevronRight, Plus } from 'lucide-react'
 import { useAppStore } from '../stores/appStore'
 
 export function ChatsScreen() {
-  const { agents, sessionsByAgent, setActiveAgent, setScreen, activeAgentId } = useAppStore()
+  const { agents, sessions, setScreen, activeAgentId, activeSessionId, fetchSessions, restoreSession } = useAppStore()
 
-  // Gather all sessions across agents, sorted by latest message time
-  const allSessions = agents.flatMap((agent) =>
-    (sessionsByAgent[agent.agentId] ?? []).map((sess) => ({ ...sess, agentName: agent.agentName }))
-  ).sort((a, b) => b.createdAt - a.createdAt)
+  useEffect(() => {
+    if (activeAgentId) fetchSessions(activeAgentId)
+  }, [activeAgentId])
 
-  const handleSelectSession = (agentId: string, sessionId: string) => {
-    useAppStore.setState({ activeAgentId: agentId, activeSessionId: sessionId, screen: 'chat-detail' })
+  const allSessions = sessions
+    .map((sess) => {
+      const agent = agents.find((a) => a.agentId === sess.agentId)
+      return { ...sess, agentName: agent?.agentName ?? sess.agentId }
+    })
+    .sort((a, b) => b.createdAt - a.createdAt)
+
+  const handleSelectSession = async (agentId: string, sessionId: string) => {
+    useAppStore.setState({ activeAgentId: agentId })
+    await restoreSession(sessionId)
+    setScreen('chat-detail')
   }
 
   return (
@@ -41,7 +50,7 @@ export function ChatsScreen() {
           <div className="flex flex-col gap-1.5">
             {allSessions.map((sess) => {
               const lastMsg = sess.messages[sess.messages.length - 1]
-              const isActive = sess.id === (activeAgentId ? useAppStore.getState().activeSessionId : null)
+              const isActive = sess.id === activeSessionId
               return (
                 <button
                   key={sess.id}

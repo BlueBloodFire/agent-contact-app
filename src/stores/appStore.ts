@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { AgentConfig, ChatMessage, ChatSession, Screen } from '../types'
 import * as agentApi from '../api/agentApi'
 import { useAuthStore } from './authStore'
+import { getActiveConfig } from '../utils/modelConfig'
 
 interface AppStore {
   screen: Screen
@@ -13,8 +14,16 @@ interface AppStore {
   activeAgentId: string | null
   activeSessionId: string | null
 
+  webSearchEnabled: boolean
+  setWebSearchEnabled: (v: boolean) => void
+
+  showModelConfigPrompt: boolean
+  setShowModelConfigPrompt: (v: boolean) => void
+
   sessions: ChatSession[]
   createSession: (agentId: string) => Promise<string>
+  fetchSessions: (agentId: string) => Promise<void>
+  restoreSession: (sessionId: string) => Promise<void>
 
   addMessage: (sessionId: string, msg: ChatMessage) => void
   updateMessage: (sessionId: string, msgId: string, content: string, streaming?: boolean) => void
@@ -42,7 +51,65 @@ export const useAppStore = create<AppStore>((set, get) => ({
   activeAgentId: null,
   activeSessionId: null,
 
+  webSearchEnabled: false,
+  setWebSearchEnabled: (v) => set({ webSearchEnabled: v }),
+  showModelConfigPrompt: false,
+  setShowModelConfigPrompt: (v) => set({ showModelConfigPrompt: v }),
+
   sessions: [],
+
+  fetchSessions: async (agentId) => {
+    const userId = useAuthStore.getState().userId
+    try {
+      const records = await agentApi.getSessions(userId, agentId)
+      set((s) => {
+        const existing = new Map(s.sessions.map((sess) => [sess.id, sess]))
+        for (const r of records) {
+          if (!existing.has(r.sessionId)) {
+            existing.set(r.sessionId, {
+              id: r.sessionId,
+              agentId: r.agentId,
+              name: r.title || `对话 ${existing.size + 1}`,
+              messages: [],
+              createdAt: new Date(r.createdAt).getTime(),
+            })
+          }
+        }
+        return { sessions: Array.from(existing.values()).sort((a, b) => b.createdAt - a.createdAt) }
+      })
+    } catch {
+      // ignore
+    }
+  },
+
+  restoreSession: async (sessionId) => {
+    const session = get().sessions.find((s) => s.id === sessionId)
+    if (!session || session.messages.length > 0) {
+      set({ activeSessionId: sessionId })
+      return
+    }
+    try {
+      const records = await agentApi.getSessionMessages(sessionId)
+      set((s) => ({
+        activeSessionId: sessionId,
+        sessions: s.sessions.map((sess) =>
+          sess.id === sessionId
+            ? {
+                ...sess,
+                messages: records.map((r, i) => ({
+                  id: `${sessionId}_${i}`,
+                  role: r.role as 'user' | 'assistant',
+                  content: r.content,
+                  timestamp: new Date(r.createdAt).getTime(),
+                })),
+              }
+            : sess,
+        ),
+      }))
+    } catch {
+      set({ activeSessionId: sessionId })
+    }
+  },
 
   createSession: async (agentId) => {
     const userId = useAuthStore.getState().userId
@@ -56,7 +123,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       createdAt: Date.now(),
     }
     set((s) => ({
-      sessions: [...s.sessions, newSession],
+      sessions: [newSession, ...s.sessions],
       activeSessionId: sessionId,
     }))
     return sessionId
@@ -102,9 +169,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   sendMessage: async (text) => {
-    const { activeAgentId, isLoading } = get()
+    const { activeAgentId, isLoading, webSearchEnabled } = get()
     const userId = useAuthStore.getState().userId
     if (!activeAgentId || isLoading || !text.trim()) return
+
+    // 检查是否已配置模型
+    const activeCfg = getActiveConfig(activeAgentId)
+    if (!activeCfg) {
+      set({ showModelConfigPrompt: true })
+      return
+    }
 
     let sessionId = get().activeSessionId
     if (!sessionId) {
@@ -131,13 +205,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const onDone = () => {
       get().updateMessage(sessionId!, aiMsgId, accumulated, false)
       set({ isLoading: false, _abortFn: null })
+      const sess = get().sessions.find((s) => s.id === sessionId)
+      if (sess && sess.name.startsWith('对话 ')) {
+        const title = text.length > 20 ? text.substring(0, 20) + '…' : text
+        set((s) => ({
+          sessions: s.sessions.map((se) => se.id === sessionId ? { ...se, name: title } : se),
+        }))
+      }
     }
     const onError = () => {
       get().updateMessage(sessionId!, aiMsgId, accumulated || '响应失败，请重试', false)
       set({ isLoading: false, _abortFn: null })
     }
 
-    const abort = agentApi.chatStream(activeAgentId, userId, sessionId, text, onChunk, onDone, onError)
+    const abort = agentApi.chatStream(activeAgentId, userId, sessionId, text, onChunk, onDone, onError, webSearchEnabled)
     set({ _abortFn: abort })
   },
 }))

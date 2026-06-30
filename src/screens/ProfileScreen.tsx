@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useAuthStore } from '../stores/authStore'
 import { useAppStore } from '../stores/appStore'
+import { SettingsScreen } from './SettingsScreen'
+import { ChevronRight } from 'lucide-react'
 
 const Toggle = ({ on, toggle }: { on: boolean; toggle: () => void }) => (
   <button
@@ -20,9 +22,38 @@ export function ProfileScreen() {
   const [eOn, setEOn] = useState(true)
   const [pOn, setPOn] = useState(true)
   const [aOn, setAOn] = useState(true)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   return (
-    <div className="h-full overflow-y-auto" style={{ background: '#f2f2f7' }}>
+    <div className="h-full overflow-y-auto relative" style={{ background: '#f2f2f7' }}>
+      {/* Settings overlay */}
+      {showSettings && (
+        <div className="absolute inset-0 z-30" style={{ background: '#FAF9F7' }}>
+          <div className="safe-top shrink-0 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-[#E5E1DA] bg-white">
+            <button onClick={() => setShowSettings(false)} className="text-[#CC785C] text-sm font-medium active:opacity-60">返回</button>
+            <span className="flex-1 text-center text-sm font-semibold text-[#1A1A1A]">设置</span>
+            <span className="w-8" />
+          </div>
+          <div className="h-[calc(100%-56px)] overflow-y-auto">
+            <SettingsScreen />
+          </div>
+        </div>
+      )}
+
+      {/* Logout confirm */}
+      {showLogoutConfirm && (
+        <div className="absolute inset-0 z-40 flex items-end bg-black/40" onClick={() => setShowLogoutConfirm(false)}>
+          <div className="w-full bg-white rounded-t-2xl p-5 pb-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-base font-bold text-[#1A1A1A] mb-1">退出登录</p>
+            <p className="text-sm text-[#666] mb-5">确定要退出登录吗？</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 h-12 rounded-2xl border border-[#E5E1DA] text-sm font-semibold text-[#1A1A1A]">取消</button>
+              <button onClick={() => { setShowLogoutConfirm(false); logout() }} className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-semibold">确认退出</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Profile header */}
       <div style={{ background: 'white', padding: '86px 20px 24px', marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid #f3f4f6' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '22px', fontWeight: '700', marginBottom: '12px' }}>
@@ -83,9 +114,18 @@ export function ProfileScreen() {
           </div>
         </div>
 
+        {/* Settings */}
+        <button
+          onClick={() => setShowSettings(true)}
+          style={{ width: '100%', padding: '14px 16px', background: 'white', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#111827' }}
+        >
+          <span>设置 / 模型配置</span>
+          <ChevronRight size={16} style={{ color: '#ccc' }} />
+        </button>
+
         {/* Logout */}
         <button
-          onClick={logout}
+          onClick={() => setShowLogoutConfirm(true)}
           style={{ width: '100%', padding: '14px', background: 'white', color: '#ef4444', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', marginBottom: '8px' }}
         >
           退出登录

@@ -34,4 +34,12 @@ export interface ModelConfig {
   model: string
 }
 
+export interface ModelConfigEntry {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  model: string
+}
+
 export type Screen = 'home' | 'chat' | 'biz' | 'profile'

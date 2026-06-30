@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react'
 import { useAppStore } from '../stores/appStore'
 import { MessageBubble } from '../components/MessageBubble'
 import { ChatInputBar } from '../components/ChatInputBar'
+import { Settings } from 'lucide-react'
 
 export function ChatScreen() {
-  const { activeAgentId, activeSessionId, agents, sessions, createSession, isLoading } = useAppStore()
+  const { activeAgentId, activeSessionId, agents, sessions, createSession, isLoading, showModelConfigPrompt, setShowModelConfigPrompt, setScreen } = useAppStore()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const agent = agents.find((a) => a.agentId === activeAgentId)
@@ -27,7 +28,30 @@ export function ChatScreen() {
   )
 
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ background: '#f2f2f7' }}>
+    <div className="h-full flex flex-col overflow-hidden relative" style={{ background: '#f2f2f7' }}>
+      {/* 未配置模型提示 */}
+      {showModelConfigPrompt && (
+        <div className="absolute inset-0 z-40 flex items-end bg-black/40" onClick={() => setShowModelConfigPrompt(false)}>
+          <div className="w-full bg-white rounded-t-2xl p-5 pb-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-base font-bold text-[#1A1A1A] mb-1">请先配置模型</p>
+            <p className="text-sm text-[#666] mb-5">对话前需要先在「设置」中配置可用的模型，请前往配置后再开始对话。</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowModelConfigPrompt(false)}
+                className="flex-1 h-12 rounded-2xl border border-[#E5E1DA] text-sm font-semibold text-[#1A1A1A]"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => { setShowModelConfigPrompt(false); setScreen('profile') }}
+                className="flex-1 h-12 rounded-2xl bg-[#1A1A1A] text-white text-sm font-semibold flex items-center justify-center gap-1.5"
+              >
+                <Settings className="w-4 h-4" /> 前往设置
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div style={{ height: '62px', background: 'white', flexShrink: 0 }} />
       <div style={{ background: 'white', borderBottom: '1px solid #f3f4f6', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
