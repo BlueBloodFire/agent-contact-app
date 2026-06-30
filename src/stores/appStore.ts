@@ -12,6 +12,7 @@ interface AppStore {
   fetchAgents: () => Promise<void>
 
   activeAgentId: string | null
+  setActiveAgentId: (id: string) => void
   activeSessionId: string | null
 
   webSearchEnabled: boolean
@@ -49,6 +50,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   activeAgentId: null,
+  setActiveAgentId: (id) => set({ activeAgentId: id, activeSessionId: null }),
   activeSessionId: null,
 
   webSearchEnabled: false,

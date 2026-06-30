@@ -3,6 +3,7 @@ import { useAppStore } from '../stores/appStore'
 import { MessageBubble } from '../components/MessageBubble'
 import { ChatInputBar } from '../components/ChatInputBar'
 import { Settings } from 'lucide-react'
+import { getActiveConfig } from '../utils/modelConfig'
 
 export function ChatScreen() {
   const { activeAgentId, activeSessionId, agents, sessions, createSession, isLoading, showModelConfigPrompt, setShowModelConfigPrompt, setScreen } = useAppStore()
@@ -11,6 +12,14 @@ export function ChatScreen() {
   const agent = agents.find((a) => a.agentId === activeAgentId)
   const currentSession = sessions.find((s) => s.id === activeSessionId)
   const messages = currentSession?.messages ?? []
+
+  // 切换智能体时探测模型配置
+  useEffect(() => {
+    if (!activeAgentId) return
+    if (!getActiveConfig(activeAgentId)) {
+      setShowModelConfigPrompt(true)
+    }
+  }, [activeAgentId])
 
   // Auto-create session when entering chat with no session
   useEffect(() => {
