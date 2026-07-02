@@ -1,88 +1,82 @@
 # AI Agent Contact App
 
-`ai-agent-contact-app` 是 AI 客服产品的 App 风格前端，面向移动端体验和轻量化客服交互场景。
+[中文文档](./README.zh-CN.md)
 
-它通过调用 `ai-agent-contact` 后端服务，提供登录、智能体切换、聊天、会话列表、设置与模型配置等功能。
+`ai-agent-contact-app` is the mobile-style frontend of the AI Agent Contact product.
 
-## 产品定位
+It connects to the `ai-agent-contact` backend and provides login, agent switching, conversation browsing, chat interaction, and model settings in a lightweight app-like experience.
 
-这个项目不是纯演示页面，而是 AI 客服产品的 **App 交互层**。
+## What It Is
 
-它强调：
+This repository is not a static demo page.
 
-- 更贴近移动端的页面结构
-- 面向终端用户或业务人员的轻量客服体验
-- 与后端智能体服务对接的多会话聊天能力
+It is the **app-style interaction layer** of the product, designed for:
 
-## 核心功能
+- mobile-oriented interface structure
+- lightweight customer service workflows
+- fast experience validation for AI customer service scenarios
 
-### 1. 登录与身份状态
+## Core Experience
 
-- 登录页
-- 本地登录态管理
-- 退出登录
+### Login and Identity State
 
-### 2. 智能体选择
+- Login screen
+- Local auth state persistence
+- Logout flow
 
-- 展示可用客服智能体列表
-- 在不同智能体之间切换
-- 支持不同客服角色的入口，例如 Web 客服、App 客服、通用助手
+### Agent Selection
 
-### 3. 会话与聊天
+- Show available agent list
+- Switch between different agents
+- Support different business entry roles
 
-- 创建新会话
-- 查看历史会话列表
-- 进入单个聊天会话
-- 与 AI 客服进行多轮对话
-- 展示 AI 回复和用户消息
+### Conversations and Chat
 
-### 4. 模型配置能力
+- Create new sessions
+- Browse historical sessions
+- Open a single chat session
+- Run multi-turn conversations with AI customer service agents
+- Render user messages and AI replies
 
-- 按智能体配置模型参数
-- 支持配置：
-  - `baseUrl`
-  - `apiKey`
-  - `model`
-- 适合产品演示、测试环境和多模型试验
+### Model Settings
 
-### 5. 业务入口与个人中心
+- Configure model settings per agent
+- Support `baseUrl`, `apiKey`, and `model`
 
-- 首页
-- 业务页面
-- 个人中心
-- 设置页
+### App Pages
 
-这使它不只是一个聊天窗口，而是一个完整的 App 风格客服产品原型。
+- Home
+- Business
+- Profile
+- Settings
 
-## 典型使用场景
+## Typical Use Cases
 
-- 做企业客服 App 原型
-- 演示“多智能体 AI 客服”在移动端的交互体验
-- 让业务团队快速体验不同智能体和模型效果
-- 做运营、客服、产品团队的内部试用版本
+- Build a mobile-style AI customer service prototype
+- Demonstrate multi-agent AI customer service on an app-like interface
+- Let business teams compare different agent and model behaviors quickly
+- Run internal pilot versions for support workflow validation
 
-## 适合谁使用
+## Who It Is For
 
-- 产品经理：需要快速演示 AI 客服在移动端 / App 风格界面中的体验
-- 运营团队：希望验证客服流程、欢迎语、入口设计和业务转化路径
-- 客服团队：体验 AI 客服在真实问答流程中的表现
-- 设计师：查看多页面 App 客服原型在真实代码中的落地效果
-- 创新业务团队：用较低成本做内部试点和功能验证
+- Product managers who need to demo AI customer service on a mobile-style UI
+- Operations teams validating entry flow, greeting logic, and service path design
+- Customer support teams testing AI-assisted support interactions
+- Designers reviewing how an app-style AI customer service product lands in real code
+- Internal innovation teams running low-cost pilot experiments
 
-## 页面结构
+## Main Screens
 
-项目当前主要包含这些页面与模块：
+- `LoginScreen`
+- `HomeScreen`
+- `ChatsScreen`
+- `ChatScreen`
+- `AgentsScreen`
+- `BizScreen`
+- `ProfileScreen`
+- `SettingsScreen`
 
-- `LoginScreen`：登录
-- `HomeScreen`：首页
-- `ChatsScreen`：会话列表
-- `ChatScreen`：聊天界面
-- `AgentsScreen`：智能体选择
-- `BizScreen`：业务页
-- `ProfileScreen`：个人中心
-- `SettingsScreen`：设置和模型配置
-
-## 技术栈
+## Tech Stack
 
 - React 19
 - TypeScript
@@ -91,40 +85,43 @@
 - Tailwind CSS
 - react-markdown
 
-## 快速启动
+## Quick Start
 
-### 安装依赖
+### Requirements
+
+- Node.js
+- npm
+- a running `ai-agent-contact` backend
+
+### Install
 
 ```bash
 npm install
 ```
 
-### 开发模式
+### Development
 
 ```bash
 npm run dev
 ```
 
-### 生产构建
+### Production Build
 
 ```bash
 npm run build
 ```
 
-## 后端依赖
+## Backend Dependency
 
-本项目依赖后端服务：
+This frontend depends on:
 
 - `ai-agent-contact`
 
-因此在运行前，需要确保后端接口可访问，并且相关 API 路径可正常返回。
+Make sure the backend APIs are available before running the app.
 
-## 与其他仓库的关系
+## Recommended Pairing
 
-- `ai-agent-contact`：后端服务，负责智能体运行、会话编排、模型配置、知识库和流式接口
-- `ai-agent-contact-app`：App 风格前端，强调移动端体验
-- `ai-agent-contact-client`：Web 工作台风格前端，强调后台管理和桌面化交互
+Use this repository together with:
 
-## 适合访客快速理解的一句话
-
-这是 AI 客服产品的 App 风格前端，用来承载登录、智能体切换、多会话聊天和模型配置等核心交互体验。
+- [`ai-agent-contact`](https://github.com/BlueBloodFire/agent-contact-server)
+- [`ai-agent-contact-client`](https://github.com/BlueBloodFire/agent-contact-client)
